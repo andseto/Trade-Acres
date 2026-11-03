@@ -1,26 +1,173 @@
 @import "tailwindcss";
 
+/* ───────────── Trade Acres theme tokens ─────────────
+   Cozy pixel-farm palette: dark soil page, wooden panels, cream text, leaf-green actions. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --soil: #1b130c;    /* page background, darkest */
+  --bark: #3a2616;    /* panels */
+  --wood: #563820;    /* raised surfaces */
+  --plank: #8b5a2b;   /* borders / light wood */
+  --leaf: #8cc84b;    /* primary action */
+  --cream: #f6e7c1;   /* primary text */
+  --gain: #9bd65a;    /* profit / positive */
+  --loss: #e8604c;    /* loss / danger */
+  --gold: #f2c14e;    /* highlights, harvest, warnings */
+  --muted: #c4a77f;   /* secondary text */
+  --outline: #140c06; /* pixel outline colour */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-soil: var(--soil);
+  --color-bark: var(--bark);
+  --color-wood: var(--wood);
+  --color-plank: var(--plank);
+  --color-leaf: var(--leaf);
+  --color-cream: var(--cream);
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
+  --color-gold: var(--gold);
+  --color-muted: var(--muted);
+  --color-outline: var(--outline);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
   --font-mono: var(--font-geist-mono);
+
+  /* pixel UI: corners stay crisp — every rounded-* step is just a couple of pixels */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* tilled-earth texture: a tiny 8×8 pixel tile, scaled crisply */
+  background-color: var(--soil);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%231b130c'/%3E%3Crect x='1' y='2' width='1' height='1' fill='%23241a10'/%3E%3Crect x='5' y='1' width='1' height='1' fill='%23140e08'/%3E%3Crect x='3' y='5' width='1' height='1' fill='%23241a10'/%3E%3Crect x='6' y='6' width='1' height='1' fill='%23140e08'/%3E%3C/svg%3E");
+  background-size: 24px 24px;
+  image-rendering: pixelated;
+  color: var(--cream);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* ───────────── shared component classes ─────────────
+   Pixel-game UI: hard outlines and bevels instead of blur and glow. */
+
+/* wooden panel: dark outline, light inner bevel, hard drop shadow */
+@utility panel {
+  background-color: var(--bark);
+  background-image: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 7px);
+  border: 3px solid var(--outline);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 2px #6b4426,
+    inset 0 4px 0 0 rgba(255, 220, 160, 0.08),
+    0 4px 0 0 rgba(0, 0, 0, 0.35);
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 font-display text-[15px] leading-none tracking-wide transition-[transform,filter] disabled:pointer-events-none disabled:opacity-50;
+  border: 3px solid var(--outline);
+  border-radius: 3px;
+  &:active {
+    transform: translateY(2px);
+  }
+}
+@utility btn-primary {
+  @apply btn;
+  background-color: var(--leaf);
+  color: #1d2b0c;
+  box-shadow: inset 0 3px 0 0 #c3eb8a, inset 0 -4px 0 0 #5e9a2a, 0 3px 0 0 rgba(0, 0, 0, 0.4);
+  &:hover {
+    filter: brightness(1.07);
+  }
+  &:active {
+    box-shadow: inset 0 3px 0 0 #c3eb8a, inset 0 -2px 0 0 #5e9a2a;
+  }
+}
+@utility btn-ghost {
+  @apply btn;
+  background-color: var(--wood);
+  color: var(--cream);
+  box-shadow: inset 0 3px 0 0 #7d5531, inset 0 -4px 0 0 #3d2714, 0 3px 0 0 rgba(0, 0, 0, 0.4);
+  &:hover {
+    filter: brightness(1.12);
+  }
+  &:active {
+    box-shadow: inset 0 3px 0 0 #7d5531, inset 0 -2px 0 0 #3d2714;
+  }
+}
+@utility btn-danger {
+  @apply btn;
+  background-color: var(--loss);
+  color: #2a0d07;
+  box-shadow: inset 0 3px 0 0 #f59a8a, inset 0 -4px 0 0 #a83a2a, 0 3px 0 0 rgba(0, 0, 0, 0.4);
+  &:hover {
+    filter: brightness(1.07);
+  }
+}
+
+@utility label {
+  @apply mb-1.5 block font-display text-[13px] uppercase tracking-wider text-muted;
+}
+
+/* parchment input field */
+@utility input {
+  @apply w-full px-3.5 py-2.5 text-sm outline-none transition-[border-color,box-shadow];
+  background-color: #f3e3bb;
+  color: #2b1a0e;
+  border: 3px solid var(--outline);
+  border-radius: 3px;
+  box-shadow: inset 0 3px 0 0 rgba(120, 80, 40, 0.18);
+  &::placeholder {
+    color: #9a7b55;
+  }
+  &:focus {
+    border-color: #4f7d22;
+    box-shadow: inset 0 3px 0 0 rgba(120, 80, 40, 0.18), 0 0 0 3px rgba(140, 200, 75, 0.35);
+  }
+}
+
+@utility chip {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold;
+  background-color: var(--wood);
+  border: 2px solid var(--outline);
+  border-radius: 2px;
+  box-shadow: inset 0 2px 0 0 #7d5531;
+}
+
+@utility pnl-pos {
+  color: var(--gain);
+}
+@utility pnl-neg {
+  color: var(--loss);
+}
+
+@utility font-display-title {
+  @apply font-display tracking-tight;
+}
+
+/* crisp pixel art anywhere it's used */
+@utility pixelated {
+  image-rendering: pixelated;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

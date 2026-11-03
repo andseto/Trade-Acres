@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌱 Trade Acres
 
-## Getting Started
+A trading journal where every funded account and eval is a plot on your pixel farm.
+Journal your trades to water your crops — and keep your accounts alive.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. **Env vars.** Fill in `.env.local` (template in `.env.example`):
+   - `NEXT_PUBLIC_SUPABASE_URL`: Supabase → Project Settings → API → Project URL
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: the `sb_publishable_...` key
+   - `NEXT_PUBLIC_SITE_URL`: `http://localhost:3000` locally, your domain in production
+2. **Database.** In Supabase → SQL Editor, run each file in `supabase/migrations/` in order:
+   - `0001_init.sql` creates the tables, row-level security, and the private `screenshots` storage bucket.
+   - `0002_farm.sql` converts the original fish-tank columns to the farm (plots, crops, watering, seasons).
+3. **Auth URLs.** In Supabase → Authentication → URL Configuration, set the Site URL to your site, then add
+   `http://localhost:3000/auth/callback` (and your production equivalent) to Redirect URLs.
+   - *Optional: email links on any device.* In Authentication → Email Templates, point the links at `/auth/confirm`:
+     - Confirm signup and Magic link: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/farm`
+     - Reset password: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password`
+   - *Optional: Google sign-in.* Enable the Google provider under Authentication → Providers.
+4. **Run it:**
+   ```bash
+   npm install
+   npm run dev
+   ```
+   Then open http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How the farm works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Each account is a plot growing one crop: wheat, corn, carrot, tomato, pumpkin, strawberry, sunflower or blueberry.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Watering.** Logging a trade waters that account's plot. A daily journal entry with no account selected waters every active plot.
+Watering happens in the database (`water_plots()` trigger), so it can't be faked from the client.
 
-## Learn More
+| Time since last journal entry | Soil |
+| --- | --- |
+| < 6h | Freshly watered |
+| < 24h | Moist |
+| < 48h | Dry |
+| < 96h | Parched |
+| 96h+ | Withering |
 
-To learn more about Next.js, take a look at the following resources:
+**Growth.** Crops grow with every journal entry: seed (0) → sprout (1) → growing (4) → mature (10) → ripe (20).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Account marked **blown** → the crop dies 💀
+- Eval marked **passed** → golden harvest 🏆
+- Account **retired** → the plot lies fallow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Seasons (spring, summer, fall, winter) are a setting on the Settings page.
 
-## Deploy on Vercel
+## Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 (App Router) · React 19 · Tailwind v4 · Supabase (Auth, Postgres, Storage)
